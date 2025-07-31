@@ -1,0 +1,7 @@
+# Core data handling and ML
+pandas
+scikit-learn
+joblib
+
+# Web app
+streamlit

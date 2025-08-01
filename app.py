@@ -15,10 +15,12 @@ def main():
 
     # ─── Sidebar Controls ──────────────────────────────────────────────────────
     use_ml = st.sidebar.checkbox("Use ML model", value=True)
-    threshold = st.sidebar.slider(
-        "Deductible probability threshold",
-        min_value=0.0, max_value=1.0, value=0.5, step=0.05
-    )
+    threshold = 0.5
+    if st.sidebar.checkbox("Edit Threshold", value= False):
+        st.sidebar.slider(
+            "Deductible probability threshold",
+            min_value=0.0, max_value=1.0, value=0.5, step=0.05
+        )
 
     # ─── Data Loading Options ──────────────────────────────────────────────────
     df = None

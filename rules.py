@@ -5,30 +5,35 @@ def rule_based_label(text: str) -> int:
     
     We’ll use this to bootstrap our ML training data.
     """
-    # Common keywords for deductible categories
-    business_travel = ["flight", "airlines", "hotel", "uber", "lyft"]
-    business_meal   = ["lunch", "dinner", "cafe", "restaurant", "meal"]
-    software_svcs   = ["zoom", "slack", "aws", "github", "azure", "gcp"]
     
-    # Negative keywords (non‑deductible)
+    """
+    Weak-label overrides before ML training.
+    """
+    text = text.lower()
+
+    # 1) Negative overrides
     for kw in ["vacation", "holiday", "personal", "family", "trip"]:
         if kw in text:
             return 0
 
-    # If any travel keyword appears, label as deductible
-    for kw in business_travel:
+    # 2) Positive overrides for business categories
+    if "coworking" in text:
+        return 1
+    if any(kw in text for kw in ["course", "training"]) and "online" in text:
+        return 1
+    if any(kw in text for kw in ["macbook", "laptop", "computer"]) and "work" in text:
+        return 1
+
+    # 3) Existing rules
+    for kw in ["flight", "airlines", "hotel", "uber", "lyft"]:
+        if kw in text:
+            return 1
+    for kw in ["lunch", "dinner", "cafe", "restaurant", "meal"]:
+        if kw in text:
+            return 1
+    for kw in ["zoom", "slack", "aws", "github", "azure", "gcp"]:
         if kw in text:
             return 1
 
-    # If any meal keyword appears, label as deductible
-    for kw in business_meal:
-        if kw in text:
-            return 1
-
-    # If any software/service keyword appears, label as deductible
-    for kw in software_svcs:
-        if kw in text:
-            return 1
-
-    # Otherwise, treat as non‑deductible
+    # Default: non-deductible
     return 0

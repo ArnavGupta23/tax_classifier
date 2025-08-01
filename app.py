@@ -44,7 +44,11 @@ def main():
     labels, reasons = [], []
     for _, row in df.iterrows():
         # classify_text returns (0 or 1, reason string)
-        label, reason = classify_text(row["text"], use_ml=use_ml)
+        label, reason = classify_text(
+            text=row["text"],
+            merchant=row["merchant"],
+            use_ml=use_ml
+        )
 
         # If ML is selected, re-apply the threshold from the sidebar
         if use_ml:
@@ -65,7 +69,7 @@ def main():
     df["deductible"] = df["deductible"].astype(bool)
 
     # ─── Display ───────────────────────────────────────────────────────────────
-    st.subheader("🚀 Classification Results")
+    st.subheader("Classification Results")
     st.dataframe(
         df[["date", "merchant", "description", "deductible", "reason"]],
         use_container_width=True

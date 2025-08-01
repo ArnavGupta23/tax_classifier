@@ -12,8 +12,18 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, accuracy_score
 
 def bootstrap_labels(df):
-    df["label"] = df["text"].apply(rule_based_label)
+    """
+    Apply rule_based_label and fill missing (None) with 0
+    so we can train a first-pass model.
+    """
+    labels = []
+    for txt in df["text"]:
+        lbl, _ = rule_based_label(txt)   # import from rules.py
+        # Treat None (no clear rule) as 0 for this bootstrap stage
+        labels.append(0 if lbl is None else lbl)
+    df["label"] = labels
     return df
+
 
 def train_and_evaluate(input_csv, model_path):
     # Load + weak labels

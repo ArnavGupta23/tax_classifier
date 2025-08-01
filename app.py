@@ -3,10 +3,10 @@ import pandas as pd
 import json
 
 from data_loader import load_transactions
-from classifier import classify_text
+from rules import rule_based_label
+from classifier import _pipeline  # your trained ML pipeline
 
 def main():
-    # ─── Header ────────────────────────────────────────────────────────────────
     st.title("Tax-Deductible Transaction Classifier")
     st.markdown(
         "Upload your own transactions or click **Load Sample Transactions** "
@@ -16,87 +16,72 @@ def main():
     # ─── Sidebar Controls ──────────────────────────────────────────────────────
     use_ml = st.sidebar.checkbox("Use ML model", value=True)
     threshold = 0.5
-    if st.sidebar.checkbox("Edit Threshold", value= False):
-        st.sidebar.slider(
+    if st.sidebar.checkbox("Edit Threshold", value=False):
+        threshold = st.sidebar.slider(
             "Deductible probability threshold",
             min_value=0.0, max_value=1.0, value=0.5, step=0.05
         )
 
     # ─── Data Loading Options ──────────────────────────────────────────────────
     df = None
-
-    # 1) Button to load the provided sample CSV
     if st.button("Load Sample Transactions"):
         df = load_transactions("data/sample_transactions-2.csv")
         st.success("Sample data loaded!")
 
-    # 2) File uploader for custom CSVs
     uploaded = st.file_uploader("Upload CSV file", type=["csv"])
     if uploaded is not None:
         df = load_transactions(uploaded)
         st.success("Your file has been uploaded!")
 
-    # If neither sample nor upload, prompt the user and exit
     if df is None:
         st.info("🔍 Upload a CSV or click **Load Sample Transactions** to begin.")
         return
 
     # ─── Classification ────────────────────────────────────────────────────────
-    # For each transaction row, run ML or rule-based classification
-    labels, reasons = [], []
+    records = []  # Store final classification results
+
     for _, row in df.iterrows():
-        # classify_text returns (0 or 1, reason string)
-        label, reason = classify_text(
-            text=row["text"],
-            merchant=row["merchant"],
-            use_ml=use_ml
-        )
+        text = row["text"]
+        merchant = row["merchant"]
 
-        # If ML is selected, re-apply the threshold from the sidebar
-        if use_ml:
-            # Extract the probability from the reason string
-            # e.g. reason="ML (p=0.87)" → prob=0.87
-            prob = float(reason.split("p=")[1].rstrip(")"))
-            label = int(prob >= threshold)
-            reason = f"ML (p={prob:.2f})"
+        # Try rule-based classification first
+        rule_label, rule_reason = rule_based_label(text)
 
-        labels.append(label)
-        reasons.append(reason)
+        if rule_label is not None:
+            final_label = bool(rule_label)
+            final_reason = rule_reason
+        elif use_ml:
+            # Fallback to ML if no rule matched and ML is enabled
+            X = pd.DataFrame([{"text": text, "merchant": merchant}])
+            prob = _pipeline.predict_proba(X)[0, 1]
+            final_label = bool(prob >= threshold)
+            final_reason = f"{rule_reason}; ML (p={prob:.2f})"
+        else:
+            # Default to non-deductible if no rule and ML disabled
+            final_label = False
+            final_reason = rule_reason
 
-    # Attach results back to the DataFrame
-    df["deductible"] = labels
-    df["reason"]      = reasons
+        # Append result to output list
+        records.append({
+            "date": row["date"],
+            "merchant": merchant,
+            "description": row["description"],
+            "deductible": bool(final_label),
+            "reason": final_reason
+        })
 
-    # Convert numeric label to boolean for JSON output
-    df["deductible"] = df["deductible"].astype(bool)
 
     # ─── Display ───────────────────────────────────────────────────────────────
+    out_df = pd.DataFrame(records)
     st.subheader("Classification Results")
-    st.dataframe(
-        df[["date", "merchant", "description", "deductible", "reason"]],
-        use_container_width=True
-    )
+    st.dataframe(out_df, use_container_width=True)
 
     # ─── Downloads ─────────────────────────────────────────────────────────────
-    # 1) CSV
-    csv_data = df.to_csv(index=False)
-    st.download_button(
-        "Download results as CSV",
-        csv_data,
-        "predictions.csv",
-        "text/csv"
-    )
+    csv_data = out_df.to_csv(index=False)
+    st.download_button("Download results as CSV", csv_data, "predictions.csv", "text/csv")
 
-    # 2) JSON (matching your schema)
-    records = df[["date", "merchant", "description", "deductible", "reason"]] \
-        .to_dict(orient="records")
     json_data = json.dumps(records, indent=2)
-    st.download_button(
-        "Download results as JSON",
-        json_data,
-        "predictions.json",
-        "application/json"
-    )
+    st.download_button("Download results as JSON", json_data, "predictions.json", "application/json")
 
 if __name__ == "__main__":
     main()

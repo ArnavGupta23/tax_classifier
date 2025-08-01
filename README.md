@@ -1,4 +1,4 @@
-# 🧾 Tax-Deductible Transaction Classifier
+# Tax-Deductible Transaction Classifier
 
 This project classifies bank transactions as either **tax-deductible** or **non-deductible** using a hybrid system that combines **rule-based logic** and a **machine learning model**.
 
@@ -8,7 +8,7 @@ Live Demo: https://taxclassifier.streamlit.app/
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ├── app.py                # Streamlit web app interface
@@ -22,7 +22,7 @@ Live Demo: https://taxclassifier.streamlit.app/
 
 ---
 
-## ⚙️ How It Works
+## How It Works
 
 ### Hybrid Classification Logic
 
@@ -33,7 +33,7 @@ The model outputs a clear explanation for every prediction.
 
 ---
 
-## 🧪 Input Format
+## Input Format
 
 The input CSV must contain:
 - `date` – e.g., `2024-05-10`
@@ -43,7 +43,7 @@ The input CSV must contain:
 
 ---
 
-## 📊 Output Format
+## Output Format
 
 The output is available in both CSV and JSON formats. Each record contains:
 - `date`
@@ -54,7 +54,7 @@ The output is available in both CSV and JSON formats. Each record contains:
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
 ### 1. Install dependencies
 ```bash
@@ -75,7 +75,7 @@ You can upload your own transaction CSV or load the sample.
 
 ---
 
-## 🎯 Features
+## Features
 
 - ✅ Explainable rule-based deductions
 - ✅ ML fallback with threshold tuning
@@ -85,7 +85,7 @@ You can upload your own transaction CSV or load the sample.
 
 ---
 
-## 📄 Assumptions
+## Assumptions
 
 - Transactions that don’t match any rule default to ML classification.
 - The threshold for ML confidence is set to 0.5 by default (user-adjustable).
@@ -93,7 +93,7 @@ You can upload your own transaction CSV or load the sample.
 
 ---
 
-## 🏁 Sample JSON Output
+## Sample JSON Output
 
 ```json
 [
@@ -109,7 +109,7 @@ You can upload your own transaction CSV or load the sample.
 
 ---
 
-## 🙋‍♂️ Author
+## Author
 
 **Arnav Gupta**  
 AI/ML Internship Candidate  

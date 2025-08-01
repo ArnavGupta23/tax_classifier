@@ -4,6 +4,10 @@ This project classifies bank transactions as either **tax-deductible** or **non-
 
 ---
 
+Live Demo: https://taxclassifier.streamlit.app/
+
+---
+
 ## 📁 Project Structure
 
 ```
